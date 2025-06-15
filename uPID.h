@@ -92,7 +92,7 @@ class uPID {
 };
 
 // uPIDfast
-template <uint8_t cfg = 0>
+template <uint8_t cfg = 0, typename float_t = float>
 class uPIDfast {
     static constexpr bool _backCalc = cfg & I_BACK_CALC;
     static constexpr bool _satur = cfg & I_SATURATE;
@@ -106,32 +106,32 @@ class uPIDfast {
         setDt(dt);
     }
 
-    float Kbc = 0;
-    float setpoint = 0;
-    float integral = 0;
-    float outMax = 255;
-    float outMin = 0;
+    float_t Kbc = 0;
+    float_t setpoint = 0;
+    float_t integral = 0;
+    float_t outMax = 255;
+    float_t outMin = 0;
 
-    inline float getKp() { return Kp; }
-    inline float getKi() { return Ki / _dt; }
-    inline float getKd() { return Kd * _dt; }
+    inline float_t getKp() { return Kp; }
+    inline float_t getKi() { return Ki / _dt; }
+    inline float_t getKd() { return Kd * _dt; }
 
-    inline void setKp(float p) { Kp = p; }
-    inline void setKi(float i) { Ki = i * _dt; }
-    inline void setKd(float d) { Kd = d / _dt; }
+    inline void setKp(float_t p) { Kp = p; }
+    inline void setKi(float_t i) { Ki = i * _dt; }
+    inline void setKd(float_t d) { Kd = d / _dt; }
 
     // установить период работы в мс
     void setDt(uint16_t ms) {
-        float r = (ms / 1000.0f) / _dt;
+        float_t r = (ms / 1000.0f) / _dt;
         Ki *= r;
         Kd /= r;
         _dt = ms / 1000.0f;
     }
 
     // вычислить (вызывать с заданным периодом). Вернёт выход
-    float compute(float input) {
-        float error = setpoint - input;
-        float deriv = _dInput ? (_prev - input) : (error - _prev);
+    float_t compute(float_t input) {
+        float_t error = setpoint - input;
+        float_t deriv = _dInput ? (_prev - input) : (error - _prev);
         _prev = _dInput ? input : error;
 
         if (_first) _first = false, deriv = 0;
@@ -144,7 +144,7 @@ class uPIDfast {
         if (_rst && ((!_rev && input >= setpoint) || (_rev && input <= setpoint))) integral = 0;
         if (_pMeas) integral += Kp * deriv;
 
-        float output = (_pMeas ? 0 : Kp * error) + integral + Kd * deriv;
+        float_t output = (_pMeas ? 0 : Kp * error) + integral + Kd * deriv;
 
         if (output >= outMax) {
             if (_backCalc && Kbc) error += (outMax - output) * Kbc;
@@ -162,8 +162,8 @@ class uPIDfast {
     }
 
    private:
-    float Kp = 0, Ki = 0, Kd = 0;
-    float _prev = 0;
-    float _dt;
+    float_t Kp = 0, Ki = 0, Kd = 0;
+    float_t _prev = 0;
+    float_t _dt;
     bool _first = true;
 };

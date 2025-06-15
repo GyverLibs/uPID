@@ -70,7 +70,7 @@ float compute(float input);
 Быстрая и лёгкая версия: режим задаётся в шаблоне на этапе компиляции, а коэффициенты можно менять только через set-get. Эта версия на 20 мкс быстрее считается - 67 против 87 мкс (AVR 16 MHz, стандартные настройки).
 
 ```cpp
-uPIDfast<uint8_t cfg = 0>(uint16_t dt = 30);
+uPIDfast<uint8_t cfg = 0, typename float_t = float>(uint16_t dt = 30);
 
 float Kbc = 0;
 float setpoint = 0;
