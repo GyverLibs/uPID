@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map For uPID
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+uPID	KEYWORD1
+uPIDfast	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+setDt	KEYWORD2
+compute	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+P_ERROR	LITERAL1
+P_MEASURE	LITERAL1
+I_BACK_CALC	LITERAL1
+I_SATURATE	LITERAL1
+I_RESET	LITERAL1
+D_INPUT	LITERAL1
+D_ERROR	LITERAL1
+PID_FORWARD	LITERAL1
+PID_REVERSE	LITERAL1
