@@ -69,28 +69,30 @@ float compute(float input);
 ### uPIDfast
 Быстрая и лёгкая версия: режим задаётся в шаблоне на этапе компиляции, а коэффициенты можно менять только через set-get. Эта версия на 20 мкс быстрее считается - 67 против 87 мкс (AVR 16 MHz, стандартные настройки).
 
+Также при создании можно указать стороннюю реализацию `float`, например числа с фиксированной точкой (библиотека [fixed](https://github.com/GyverLibs/fixed)), что облегчит код на 1-2 кБ и ускорит до 40 мкс (для процессоров без FPU).
+
 ```cpp
 uPIDfast<uint8_t cfg = 0, typename float_t = float>(uint16_t dt = 30);
 
-float Kbc = 0;
-float setpoint = 0;
-float integral = 0;
-float outMax = 255;
-float outMin = 0;
+float_t Kbc = 0;
+float_t setpoint = 0;
+float_t integral = 0;
+float_t outMax = 255;
+float_t outMin = 0;
 
-float getKp();
-float getKi();
-float getKd();
+float_t getKp();
+float_t getKi();
+float_t getKd();
 
-void setKp(float p);
-void setKi(float i);
-void setKd(float d);
+void setKp(float_t p);
+void setKi(float_t i);
+void setKd(float_t d);
 
-// установить период работы в мс
+// установить период работы в мс (выполняется долго!)
 void setDt(uint16_t ms);
 
 // вычислить (вызывать с заданным периодом). Вернёт выход
-float compute(float input);
+float_t compute(float_t input);
 ```
 
 ### Настройка

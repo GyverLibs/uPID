@@ -122,10 +122,11 @@ class uPIDfast {
 
     // установить период работы в мс
     void setDt(uint16_t ms) {
-        float_t r = (ms / 1000.0f) / _dt;
+        float_t dt = ms / float_t(1000);
+        float_t r = dt / _dt;
+        _dt = dt;
         Ki *= r;
         Kd /= r;
-        _dt = ms / 1000.0f;
     }
 
     // вычислить (вызывать с заданным периодом). Вернёт выход
@@ -144,7 +145,7 @@ class uPIDfast {
         if (_rst && ((!_rev && input >= setpoint) || (_rev && input <= setpoint))) integral = 0;
         if (_pMeas) integral += Kp * deriv;
 
-        float_t output = (_pMeas ? 0 : Kp * error) + integral + Kd * deriv;
+        float_t output = (_pMeas ? float_t(0) : Kp * error) + integral + Kd * deriv;
 
         if (output >= outMax) {
             if (_backCalc && Kbc) error += (outMax - output) * Kbc;
