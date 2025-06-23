@@ -3,15 +3,17 @@
 
 // uPID_cfg
 enum uPID_cfg : uint8_t {
-    P_ERROR = 0,             // пропорционально ошибке
-    P_MEASURE = (1 << 0),    // пропорционально вводу D_INPUT или ошибке D_ERROR. Для интегрирующих процессов
-    I_BACK_CALC = (1 << 1),  // Back Calculation, ограничение интегрирования регулируется коэф-м Kbc (по умолч. выбирать равным Ki)
-    I_SATURATE = (1 << 2),   // Conditional Integration, отключение интегрирования при насыщении выхода
-    I_RESET = (1 << 3),      // сброс интеграла при достижении уставки
-    D_INPUT = (1 << 4),      // дифференциально входу
-    D_ERROR = 0,             // дифференциально ошибке
-    PID_FORWARD = 0,         // прямое направление
-    PID_REVERSE = (1 << 5),  // обратное направление
+    P_ERROR = 0,             // пропорционально ошибке (по умолч.)
+    P_INPUT = (1 << 0),      // пропорционально вводу D_INPUT или ошибке D_ERROR. Для интегрирующих процессов
+    I_KI_OUTSIDE = 0,        // Ki снаружи интеграла (по умолч.)
+    I_KI_INSIDE = (1 << 1),  // Ki внутри интеграла
+    I_BACK_CALC = (1 << 2),  // Back Calculation, ограничение интегрирования регулируется коэф-м Kbc (по умолч. выбирать равным Ki)
+    I_SATURATE = (1 << 3),   // Conditional Integration, отключение интегрирования при насыщении выхода
+    I_RESET = (1 << 4),      // сброс интеграла при достижении уставки
+    D_INPUT = (1 << 5),      // дифференциально входу
+    D_ERROR = 0,             // дифференциально ошибке (по умолч.)
+    PID_FORWARD = 0,         // прямое направление (по умолч.)
+    PID_REVERSE = (1 << 6),  // обратное направление
 };
 
 // uPID
@@ -65,9 +67,8 @@ class uPID {
         }
 
         if ((cfg & I_RESET) && ((!(cfg & PID_REVERSE) && input >= setpoint) || ((cfg & PID_REVERSE) && input <= setpoint))) integral = 0;
-        if (cfg & P_MEASURE) integral += Kp * deriv;
 
-        float output = ((cfg & P_MEASURE) ? 0 : Kp * error) + integral + Kd * deriv * _dt_i;
+        float output = ((cfg & P_INPUT) ? -Kp * input : Kp * error) + ((cfg & I_KI_INSIDE) ? integral : Ki * integral) + Kd * deriv * _dt_i;
 
         if (output >= outMax) {
             if ((cfg & I_BACK_CALC) && Kbc) error += (outMax - output) * Kbc;
@@ -79,16 +80,17 @@ class uPID {
             if ((cfg & I_SATURATE) && error < 0) return output;
         }
 
-        integral += Ki * error * _dt;
+        integral += (cfg & I_KI_INSIDE) ? (Ki * error * _dt) : (error * _dt);
 
         return output;
     }
+
+    uint8_t cfg = 0;
 
    private:
     float _prev = 0;
     float _dt, _dt_i;
     bool _first = true;
-    uint8_t cfg = 0;
 };
 
 // uPIDfast
@@ -96,10 +98,11 @@ template <uint8_t cfg = 0, typename float_t = float>
 class uPIDfast {
     static constexpr bool _backCalc = cfg & I_BACK_CALC;
     static constexpr bool _satur = cfg & I_SATURATE;
-    static constexpr bool _pMeas = cfg & P_MEASURE;
+    static constexpr bool _pInput = cfg & P_INPUT;
     static constexpr bool _rev = cfg & PID_REVERSE;
     static constexpr bool _dInput = cfg & D_INPUT;
     static constexpr bool _rst = cfg & I_RESET;
+    static constexpr bool _inside = cfg & I_KI_INSIDE;
 
    public:
     uPIDfast(uint16_t dt = 30) {
@@ -143,9 +146,8 @@ class uPIDfast {
         }
 
         if (_rst && ((!_rev && input >= setpoint) || (_rev && input <= setpoint))) integral = 0;
-        if (_pMeas) integral += Kp * deriv;
 
-        float_t output = (_pMeas ? float_t(0) : Kp * error) + integral + Kd * deriv;
+        float_t output = (_pInput ? -Kp * input : Kp * error) + (_inside ? integral : Ki * integral) + Kd * deriv;
 
         if (output >= outMax) {
             if (_backCalc && Kbc) error += (outMax - output) * Kbc;
@@ -157,7 +159,7 @@ class uPIDfast {
             if (_satur && error < 0) return output;
         }
 
-        integral += Ki * error;
+        integral += _inside ? (Ki * error) : (error);
 
         return output;
     }
