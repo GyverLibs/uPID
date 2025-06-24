@@ -106,6 +106,9 @@ pid.clearMode(P_INPUT);
 uPIDfast<D_INPUT | P_INPUT | PID_REVERSE> pidfast;
 ```
 
+> [!TIP]
+> Подробнее о модификациях алгоритма и как они вляют на процесс регулирования можно почитать [в уроке про ПИД](https://alexgyver.ru/lessons/pid/).
+
 ### Пропорциональная
 Один вариант из двух:
 
