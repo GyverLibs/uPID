@@ -35,8 +35,11 @@ class uPID {
     inline float getKd() { return Kd; }
 
     inline void setKp(float p) { Kp = p; }
-    inline void setKi(float i) { Ki = i; }
     inline void setKd(float d) { Kd = d; }
+    void setKi(float i) {
+        Ki = i;
+        if ((cfg & I_KI_INSIDE) && i == 0) integral = 0;
+    }
 
     // установить конфиг
     inline void setConfig(uint8_t ncfg) { cfg = ncfg; }
@@ -120,8 +123,11 @@ class uPIDfast {
     inline float_t getKd() { return Kd * _dt; }
 
     inline void setKp(float_t p) { Kp = p; }
-    inline void setKi(float_t i) { Ki = i * _dt; }
     inline void setKd(float_t d) { Kd = d / _dt; }
+    void setKi(float_t i) {
+        Ki = i * _dt;
+        if (_inside && i == 0) integral = 0;
+    }
 
     // установить период работы в мс
     void setDt(uint16_t ms) {
